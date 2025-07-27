@@ -6,8 +6,8 @@ const cors = require('cors');
 const PORT = process.env.PORT;
 
 const authRoute = require('./routers/auth');
+const signup = require('./routers/auth/signup');
 const errorHandler = require('./middlewares/errorHandler');
-
 
 //Cors
 app.use(cors({
@@ -21,11 +21,7 @@ app.use(express.json());
 
 //Auth
 app.use('/api/auth', authRoute);
-
-
-
-
-
+app.use('/api/auth', authRoute);
 
 //DB Connect Test
 app.get('/test-db', async (req, res) => {
@@ -52,7 +48,7 @@ const start = () => {
     app.listen(PORT, () => {
         console.log(`Running on PORT: ${PORT} Allahu Wakbar`);
     });
-}
+}   
 
 //Catch All route
 app.use((req, res, next) => {
