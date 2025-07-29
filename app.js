@@ -6,7 +6,6 @@ const cors = require('cors');
 const PORT = process.env.PORT;
 
 const authRoute = require('./routers/auth');
-const signup = require('./routers/auth/signup');
 const errorHandler = require('./middlewares/errorHandler');
 
 //Cors
@@ -20,7 +19,6 @@ app.use(cors({
 app.use(express.json());
 
 //Auth
-app.use('/api/auth', authRoute);
 app.use('/api/auth', authRoute);
 
 //DB Connect Test
@@ -58,5 +56,15 @@ app.use((req, res, next) => {
 
 //Centralize Error handler
 app.use(errorHandler);
+
+//Jest Testing
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log("Testttttttttttttttttttttttttttttttt");
+    console.log(`Sultan, Running on PORT: ${PORT} Allahu Wakbar`);
+  });
+}
+
+module.exports = app; // <-- this line is required for tests
 
 start();
