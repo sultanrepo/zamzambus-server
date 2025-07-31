@@ -157,14 +157,14 @@ INSERT INTO buses (
 );
 
 
--- Seat layouts
-CREATE TABLE seat_layouts (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(50) NOT NULL UNIQUE,
-  rows INT NOT NULL,
-  columns INT NOT NULL,
-  description TEXT
-);
+-- Seat layouts    ------------Not Used---------------
+-- CREATE TABLE seat_layouts (
+--   id SERIAL PRIMARY KEY,
+--   name VARCHAR(50) NOT NULL UNIQUE,
+--   rows INT NOT NULL,
+--   columns INT NOT NULL,
+--   description TEXT
+-- );
 
 CREATE TABLE layout_seats (
   id SERIAL PRIMARY KEY,

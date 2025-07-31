@@ -6,11 +6,13 @@ const cors = require('cors');
 const PORT = process.env.PORT;
 
 const authRoute = require('./routers/auth');
+const users = require('./routers/users');
+const bus = require('./routers/bus');
 const errorHandler = require('./middlewares/errorHandler');
 
 //Cors
 app.use(cors({
-    origin: 'http://localhost:0000',
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
@@ -20,6 +22,12 @@ app.use(express.json());
 
 //Auth
 app.use('/api/auth', authRoute);
+
+//Users
+app.use('/api/users', users);
+
+//Bus
+app.use('/api/bus', bus)
 
 //DB Connect Test
 app.get('/test-db', async (req, res) => {
@@ -46,7 +54,7 @@ const start = () => {
     app.listen(PORT, () => {
         console.log(`Running on PORT: ${PORT} Allahu Wakbar`);
     });
-}   
+}
 
 //Catch All route
 app.use((req, res, next) => {
@@ -59,10 +67,10 @@ app.use(errorHandler);
 
 //Jest Testing
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log("Testttttttttttttttttttttttttttttttt");
-    console.log(`Sultan, Running on PORT: ${PORT} Allahu Wakbar`);
-  });
+    app.listen(PORT, () => {
+        console.log("Testttttttttttttttttttttttttttttttt");
+        console.log(`Sultan, Running on PORT: ${PORT} Allahu Wakbar`);
+    });
 }
 
 module.exports = app; // <-- this line is required for tests

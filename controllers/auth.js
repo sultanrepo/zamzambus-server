@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const AppError = require('../utils/appErrors');
 
-const allowedRoles = ['customer', 'admin', 'superadmin', 'employee', 'driver', 'manager', 'bus_owners'];
+const allowedRoles = ['customer', 'admin', 'superadmin', 'employee', 'driver', 'manager', 'bus_owners', 'user'];
 const allowedStatuses = ['active', 'suspended', 'pending'];
 
 //User Signup
@@ -57,7 +57,7 @@ const userLogin = async (req, res, next) => {
         }
 
         const token = jwt.sign(
-            { userId: user.id, email: user.email, fullName: user.full_name },
+            { userId: user.id, email: user.email, fullName: user.full_name, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
