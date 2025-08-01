@@ -1,5 +1,5 @@
 -- buses (core metadata)
-
+--API Created for Create Bus (/api/users/create-bus_owners)
 CREATE TABLE buses (
     id SERIAL PRIMARY KEY,
     bus_name VARCHAR(100) NOT NULL,

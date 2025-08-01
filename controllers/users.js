@@ -118,7 +118,82 @@ const createBusOwner = async (req, res, next) => {
     }
 };
 
+// Get Bus Owner List
+const getBusOwnerList = async (req, res, next) => {
+    try {
+        const busOwners = await knex('bus_owners')
+            .select(
+                'id',
+                'user_id',
+                'company_name',
+                'legal_entity_type',
+                'gst_number',
+                'pan_number',
+                'registration_doc',
+                'contact_person',
+                'email',
+                'phone',
+                'address_line1',
+                'address_line2',
+                'city',
+                'state',
+                'postcode',
+                'country',
+                'bank_account_name',
+                'bank_account_no',
+                'bank_ifsc_code',
+                'payout_method',
+                'notes',
+                'created_at',
+                'updated_at'
+            )
+            .orderBy('created_at', 'desc');
+
+        return res.status(200).json({
+            message: 'Bus owners fetched successfully.',
+            count: busOwners.length,
+            busOwners
+        });
+
+    } catch (error) {
+        console.error('Error fetching bus owners:', error);
+        return res.status(500).json({ message: 'Internal server error.' });
+    }
+};
+
+// Get Bus Owner by ID
+const getBusOwnerById = async (req, res, next) => {
+    const { id } = req.params;
+
+    if (!id || isNaN(id)) {
+        return next(new AppError('Invalid ID parameter.', 400));
+    }
+
+    try {
+        const busOwner = await knex('bus_owners')
+            .where({ id })
+            .first();
+
+        if (!busOwner) {
+            return next(new AppError(`Bus owner with ID ${id} not found.`, 404));
+        }
+
+        return res.status(200).json({
+            message: 'Bus owner fetched successfully.',
+            busOwner
+        });
+
+    } catch (error) {
+        console.error('Error fetching bus owner by ID:', error);
+        return res.status(500).json({ message: 'Internal server error.' });
+    }
+};
+
+
+
 module.exports = {
     changeUserStatus,
-    createBusOwner
+    createBusOwner,
+    getBusOwnerList,
+    getBusOwnerById
 };

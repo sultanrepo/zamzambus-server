@@ -1,0 +1,138 @@
+🧠 1. locations Table – Master Table for All Places
+Purpose:
+This table defines every possible geographic location involved in the bus system: bus stands, stops, terminals, boarding/drop points.
+
+Key Columns:
+name: Could be a bus stand, a more local landmark, or specific boarding point like "Near Domino’s, Andheri".
+
+city, state: Organize locations by geography.
+
+latitude, longitude: Enable map integrations, real-time tracking, distance calculations.
+
+is_active: Lets you soft-disable a location if it's no longer used.
+
+Real-Life Use Case:
+When a user selects:
+
+Source: “Gopalganj More, Siwan”
+
+Destination: “Kashmiri Gate, New Delhi”
+The system will internally map those to location_ids in this table.
+
+🚌 2. bus_trips Table – Core Schedule: When & Where a Bus Runs
+Purpose:
+Represents one scheduled journey of a bus from a source to a destination — with a fixed date/time (or recurring days).
+
+Think of this table as defining a calendar of runs for each bus.
+
+Key Columns:
+bus_id: Link to which physical bus is used.
+
+source_location_id, destination_location_id: Where this trip starts and ends.
+
+departure_time, arrival_time: Specific times the bus departs and arrives.
+
+travel_date: Useful for one-time trips (e.g. a holiday special).
+
+is_recurring, days_of_week: If true, allows repeating trips like:
+
+“Every Mon, Wed, Fri at 6PM”
+
+is_active: Let you disable a trip (maintenance, cancellation, etc.)
+
+Real-Life Use Case:
+Let’s say a bus runs:
+
+Daily from Siwan (source) to Delhi (destination) at 6:00 PM.
+
+This would be:
+
+sql
+Copy
+Edit
+INSERT INTO bus_trips (bus_id, source_location_id, destination_location_id, departure_time, travel_date, is_recurring, days_of_week)
+VALUES (7, 3, 10, '18:00', '2025-07-31', TRUE, 'Mon,Tue,Wed,Thu,Fri,Sat,Sun');
+📍 3. pickup_points Table – Where Can You Board?
+Purpose:
+Defines all intermediate locations where passengers can board for a specific trip.
+
+Each pickup point is:
+
+Attached to a trip_id
+
+Linked to a location_id
+
+Given a pickup_time and sort_order
+
+Why this is powerful:
+Supports multiple boarding locations for the same trip
+
+Passengers can choose "Where to board" during booking
+
+sort_order enables sequential display like:
+
+Copy
+Edit
+🕕 6:00 PM – Gopalganj More  
+🕡 6:30 PM – Siwan Bus Stand  
+🕖 7:00 PM – Chhapra Bypass  
+Real-Life Use Case:
+When a user searches for a bus from Siwan to Delhi, they see:
+
+“Boarding Points near you:
+
+Siwan Kachahari (6:00 PM)
+
+Gopalganj Bus Stand (6:45 PM)”
+
+These come from this table.
+
+📥 4. drop_points Table – Where Can You Get Off?
+Purpose:
+Defines where passengers can get off during a trip — typically within or near the destination city.
+
+Exactly like pickup_points, but for end-of-journey locations.
+
+Use Case:
+When user searches for a bus to Delhi, they might see:
+
+“Dropping Points:
+
+Anand Vihar Terminal (6:30 AM)
+
+Kashmiri Gate (7:00 AM)
+
+Majnu Ka Tila (7:30 AM)”
+
+This table handles that.
+
+🔄 How It All Works Together (System Flow):
+As a developer:
+When a user searches for buses from Siwan to Delhi, your backend will:
+
+Map city names to location_id from locations.
+
+Query bus_trips where:
+
+source_location_id = Siwan
+
+destination_location_id = Delhi
+
+travel_date = 'selected date'
+
+Or match recurring days (e.g., Mon, Tue)
+
+For each matched trip_id, fetch:
+
+Pickup points → Show boarding options
+
+Drop points → Show dropping options
+
+Join with buses to show the bus name/type/seats etc.
+
+🧩 In Summary (User POV):
+Table	What It Represents	User Experience
+locations	All possible stops and points	Autocomplete/dropdowns for location search
+bus_trips	Scheduled bus journeys	What buses are available on a date
+pickup_points	Where to board that trip	Select boarding location
+drop_points	Where to get down from the bus	Select dropping point   

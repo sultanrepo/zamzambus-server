@@ -27,7 +27,7 @@ app.use('/api/auth', authRoute);
 app.use('/api/users', users);
 
 //Bus
-app.use('/api/bus', bus)
+app.use('/api/bus', bus);
 
 //DB Connect Test
 app.get('/test-db', async (req, res) => {
