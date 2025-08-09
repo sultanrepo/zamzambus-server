@@ -8,6 +8,7 @@ const PORT = process.env.PORT;
 const authRoute = require('./routers/auth');
 const users = require('./routers/users');
 const bus = require('./routers/bus');
+const busRoutes = require('./routers/busRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 //Cors
@@ -28,6 +29,9 @@ app.use('/api/users', users);
 
 //Bus
 app.use('/api/bus', bus);
+
+//Bus Routes
+app.use('/api/busRoutes', busRoutes);
 
 //DB Connect Test
 app.get('/test-db', async (req, res) => {

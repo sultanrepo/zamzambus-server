@@ -104,8 +104,27 @@ CREATE TABLE locations (
     state VARCHAR(100),
     latitude DECIMAL(9,6),
     longitude DECIMAL(9,6),
-    is_active BOOLEAN DEFAULT TRUE
+    is_active BOOLEAN DEFAULT TRUE,
+    parent_city_id INT REFERENCES locations(id), -- points to the "main" city (e.g. Delhi)  -- New Added
+
 );
+
+----------------------------------------------------------------------
+-- Create states table
+CREATE TABLE states (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE         -- e.g., 'Bihar', 'Maharashtra'
+);
+
+-- Create cities table
+CREATE TABLE cities (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    state_id INTEGER NOT NULL,
+    FOREIGN KEY (state_id) REFERENCES states(id) ON DELETE CASCADE,
+    UNIQUE (name, state_id)                   -- ensures no duplicate cities in the same state
+);
+----------------------------------------------------------------------
 
 -- 2. bus_trips (Each scheduled run of a bus)
 -- 🔁 This replaces complex route modeling with a simple trip from A → B.
@@ -119,13 +138,37 @@ CREATE TABLE bus_trips (
     departure_time TIMESTAMP NOT NULL,
     arrival_time TIMESTAMP,
 
-    travel_date DATE NOT NULL, -- for one-off or recurring logic
+    travel_date DATE NOT NULL, 
+    -- for one-off or recurring logic 
+    --✅ CASE 1: One-Time Trip (is_recurring = FALSE) travel_date = the exact date on which the bus will travel.
+    --🔁 CASE 2: Recurring Trip (is_recurring = TRUE) travel_date = the date when the recurring schedule starts.
 
     is_recurring BOOLEAN DEFAULT FALSE,
-    days_of_week VARCHAR(20), -- if recurring: 'Mon,Tue,Wed'
+    -- days_of_week VARCHAR(20), -- if recurring: 'Mon,Tue,Wed' ****** Earlier *****
+    days_of_week TEXT[], -- normalized: ['Mon', 'Tue', 'Wed']   ****** Now Updated *****
 
     is_active BOOLEAN DEFAULT TRUE
 );
+-- Querying by Day To get recurring trips on 'Wed' And check with cancelled_trip:
+SELECT *
+FROM bus_trips bt
+WHERE is_recurring = TRUE
+  AND travel_date <= '2025-08-13'
+  AND 'Wed' = ANY(bt.days_of_week)
+  AND NOT EXISTS (
+    SELECT 1 FROM cancelled_trip_dates ctd
+    WHERE ctd.bus_trip_id = bt.id
+      AND ctd.cancelled_date = '2025-08-13'
+);
+
+-- 2.1 . ✅ Solution: Use a New Table — cancelled_trip_dates You need a table to store exceptions (i.e., cancellations) for recurring trips.
+-- 🗂️ New Table: cancelled_trip_dates
+CREATE TABLE cancelled_trip_dates (
+    id SERIAL PRIMARY KEY,
+    bus_trip_id INT REFERENCES bus_trips(id) ON DELETE CASCADE,
+    cancelled_date DATE NOT NULL
+);
+
 
 -- 3. pickup_points (locations where boarding is allowed for this trip)
 
