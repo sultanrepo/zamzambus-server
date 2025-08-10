@@ -106,7 +106,16 @@ CREATE TABLE locations (
     longitude DECIMAL(9,6),
     is_active BOOLEAN DEFAULT TRUE,
     parent_city_id INT REFERENCES locations(id), -- points to the "main" city (e.g. Delhi)  -- New Added
+);
 
+-- 1.1. route (This table define the bus routes)
+CREATE TABLE routes (
+    id SERIAL PRIMARY KEY,
+    route_name VARCHAR(100) NOT NULL,
+    source_location_id INT REFERENCES locations(id) ON DELETE CASCADE,
+    destination_location_id INT REFERENCES locations(id) ON DELETE CASCADE,
+    via TEXT[],  -- Stores intermediate stops as an array {Gopalganj, Lucknow}
+    status VARCHAR(20) DEFAULT 'active'  -- Example: 'active', 'inactive'
 );
 
 ----------------------------------------------------------------------

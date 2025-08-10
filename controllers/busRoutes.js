@@ -76,6 +76,21 @@ const updateLocation = async (req, res, next) => {
     }
 };
 
+const getAllLocations = async (req, res, next) => {
+    try {
+        const locations = await knex('locations')
+            .select('id', 'name', 'city', 'state', 'latitude', 'longitude', 'is_active', 'parent_city_id')
+            .orderBy('id', 'desc');
+        res.status(200).json({
+            total: locations.length,
+            locations
+        });
+    } catch (error) {
+        console.error('Error fetching locations:', error);
+        next(new AppError('Internal server error', 500));
+    }
+};
+
 const createCity = async (req, res, next) => {
     try {
         const { name, state_id } = req.body;
@@ -127,21 +142,6 @@ const getCitiesByState = async (req, res, next) => {
     } catch (error) {
         console.error('Error fetching cities:', error);
         return next(new AppError('Internal server error', 500));
-    }
-};
-
-const getAllLocations = async (req, res, next) => {
-    try {
-        const locations = await knex('locations')
-            .select('id', 'name', 'city', 'state', 'latitude', 'longitude', 'is_active', 'parent_city_id')
-            .orderBy('id', 'desc');
-        res.status(200).json({
-            total: locations.length,
-            locations
-        });
-    } catch (error) {
-        console.error('Error fetching locations:', error);
-        next(new AppError('Internal server error', 500));
     }
 };
 
@@ -258,6 +258,68 @@ const createBusTrip = async (req, res, next) => {
     }
 };
 
+const createRoute = async (req, res, next) => {
+    try {
+        const { route_name, source_location_id, destination_location_id, via, status } = req.body;
+
+        // Validation
+        if (!route_name || !source_location_id || !destination_location_id) {
+            return next(new AppError("route_name, source_location_id and destination_location_id are required", 400));
+        }
+
+        // Insert into DB
+        const [newRoute] = await knex("routes")
+            .insert({
+                route_name,
+                source_location_id,
+                destination_location_id,
+                via: via && Array.isArray(via) ? via : null,
+                status: status || "active"
+            })
+            .returning("*");
+
+        res.status(201).json({
+            message: "Route created successfully",
+            data: newRoute
+        });
+    } catch (error) {
+        console.error("Error creating route:", error);
+        next(new AppError("Internal Server Error", 500));
+    }
+};
+
+const getRoutesList = async (req, res) => {
+    try {
+        const routes = await knex('routes as r')
+            .leftJoin('locations as sl', 'r.source_location_id', 'sl.id')
+            .leftJoin('locations as dl', 'r.destination_location_id', 'dl.id')
+            .select(
+                'r.id',
+                'r.route_name',
+                'r.source_location_id',
+                knex.raw('sl.name as source_location_name'),
+                'r.destination_location_id',
+                knex.raw('dl.name as destination_location_name'),
+                'r.via',
+                'r.status'
+            )
+            .orderBy('r.id', 'asc');
+
+        res.status(200).json({
+            success: true,
+            count: routes.length,
+            data: routes
+        });
+    } catch (error) {
+        console.error('Error fetching routes list:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server Error',
+        });
+    }
+};
+
+
 
 
 module.exports = {
@@ -268,5 +330,7 @@ module.exports = {
     getAllLocations,
     createState,
     getAllStates,
-    createBusTrip
+    createBusTrip,
+    createRoute,
+    getRoutesList
 };
