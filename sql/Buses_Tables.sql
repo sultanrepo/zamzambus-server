@@ -118,6 +118,34 @@ CREATE TABLE routes (
     status VARCHAR(20) DEFAULT 'active'  -- Example: 'active', 'inactive'
 );
 
+-- 1.2. Create Bus Trip (This table is responsible for the bus trip. If user searches for the bus, this table is main responcible to fined the bus).
+CREATE TABLE bus_trips (
+    id SERIAL PRIMARY KEY,
+    bus_trip_code BIGINT UNIQUE NOT NULL DEFAULT nextval('bus_trip_code_seq'),
+    bus_id INT NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+    route_id INT NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'active',
+    created_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
+);
+
+Bus Trip
+
+1. id
+2. Bus Trip ID
+3. Bus ID -connected to buses table (id) column
+4. route ID -connected to routes Table (id) column
+-- 5. Pick up locations --
+-- 6. Drop locations    -- 
+7. departure time
+8. Arrival time
+   Trip Start Date -This is because when a bus owner wants to create the trips for multiple dates like owner can create trip starts on 2025-08-15
+   Trip Ends date  -This is because when a owner will select the start date then definatly he will end the trip on spesific date. 2025-08-30 (It will shows daily to the users from 15 to 30).
+9. status -initially active
+10. created_at -get current IST time when created
+11. updated_at -get current IST time when rows updated
+
+
 ----------------------------------------------------------------------
 -- Create states table
 CREATE TABLE states (
@@ -178,26 +206,59 @@ CREATE TABLE cancelled_trip_dates (
     cancelled_date DATE NOT NULL
 );
 
+-- 3.1. pickup_points (locations where boarding is allowed for this trip)
+
+CREATE TABLE pickup_locations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,      -- "Siwan Bus Stand", "Gopalganj More"
+    city VARCHAR(100) NOT NULL,      -- "Siwan"
+    state VARCHAR(100),
+    latitude DECIMAL(9,6),
+    longitude DECIMAL(9,6),
+    sort_order INT DEFAULT 0,        -- order of stops in listings
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
+);
+
+
+-- 4.1. drop_points (locations where passengers can get off)
+
+CREATE TABLE drop_locations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,      -- "Anand Vihar ISBT", "Noida Sector 62"
+    city VARCHAR(100) NOT NULL,      -- "Delhi"
+    state VARCHAR(100),
+    latitude DECIMAL(9,6),
+    longitude DECIMAL(9,6),
+    sort_order INT DEFAULT 0,        -- order of stops in listings
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
+);
+
 
 -- 3. pickup_points (locations where boarding is allowed for this trip)
 
 CREATE TABLE pickup_points (
     id SERIAL PRIMARY KEY,
-    trip_id INT REFERENCES bus_trips(id) ON DELETE CASCADE,
-    location_id INT REFERENCES locations(id),
-    pickup_time TIME NOT NULL,
-    sort_order INT NOT NULL -- for sequencing the pickups
+    trip_id INT NOT NULL REFERENCES bus_trips(id) ON DELETE CASCADE,
+    pickup_location_id INT NOT NULL REFERENCES pickup_locations(id) ON DELETE CASCADE,
+    pickup_time TIMESTAMPTZ NOT NULL,
+    sequence_no INT DEFAULT 1,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
+
 
 -- 4. drop_points (locations where passengers can get off)
 
 CREATE TABLE drop_points (
     id SERIAL PRIMARY KEY,
-    trip_id INT REFERENCES bus_trips(id) ON DELETE CASCADE,
-    location_id INT REFERENCES locations(id),
-    drop_time TIME NOT NULL,
-    sort_order INT NOT NULL -- for sequencing the drops
+    trip_id INT NOT NULL REFERENCES bus_trips(id) ON DELETE CASCADE,
+    drop_location_id INT NOT NULL REFERENCES drop_locations(id) ON DELETE CASCADE,
+    drop_time TIMESTAMPTZ NOT NULL,
+    sequence_no INT DEFAULT 1,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
+
 
 
 -- Query to find the buses

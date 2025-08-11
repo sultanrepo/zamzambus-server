@@ -288,7 +288,7 @@ const createRoute = async (req, res, next) => {
     }
 };
 
-const getRoutesList = async (req, res) => {
+const getRoutesList = async (req, res, next) => {
     try {
         const routes = await knex('routes as r')
             .leftJoin('locations as sl', 'r.source_location_id', 'sl.id')
@@ -312,13 +312,51 @@ const getRoutesList = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching routes list:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-        });
+        return next(new AppError('Server Error', 500));
     }
 };
 
+const createPickupLocation = async (req, res, next) => {
+    try {
+        const { name, city, state, latitude, longitude, sort_order, is_active } = req.body;
+
+        let errors = {};
+
+        if (!name) {
+            errors.name = "Name is required.";
+        }
+        if (!city) {
+            errors.city = "City is required.";
+        }
+        if (!state) {
+            errors.state = "State is required."
+        }
+        if (Object.keys(errors).length > 0) {
+            return next(new AppError(errors, 400));
+        }
+
+        const [newLocation] = await knex('pickup_locations')
+            .insert({
+                name,
+                city,
+                state,
+                latitude,
+                longitude,
+                sort_order: sort_order || 0,
+                is_active: is_active !== undefined ? is_active : true
+            })
+            .returning('*'); // Returns the inserted row
+
+        res.status(201).json({
+            success: true,
+            message: "Pickup location created successfully",
+            data: newLocation
+        });
+    } catch (error) {
+        console.error('Error creating pickup location:', error);
+        return next(new AppError('Server error', 500));
+    }
+};
 
 
 
@@ -332,5 +370,6 @@ module.exports = {
     getAllStates,
     createBusTrip,
     createRoute,
-    getRoutesList
+    getRoutesList,
+    createPickupLocation
 };

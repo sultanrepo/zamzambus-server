@@ -11,7 +11,8 @@ const {
     getAllStates,
     createBusTrip,
     createRoute,
-    getRoutesList
+    getRoutesList,
+    createPickupLocation
 } = require('../controllers/busRoutes');
 
 router.post('/locations', createLocation);
@@ -24,6 +25,7 @@ router.get('/statesList', getAllStates);
 router.post('/busTrips', createBusTrip);
 router.post('/route', createRoute);
 router.get('/routesList', getRoutesList);
+router.post('/pickupLocation', createPickupLocation);
 
 
 
