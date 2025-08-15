@@ -1,5 +1,7 @@
 -- buses (core metadata)
 --API Created for Create Bus (/api/users/create-bus_owners)
+--We are using this table in DB.
+--This table is presented in the Data Base
 CREATE TABLE buses (
     id SERIAL PRIMARY KEY,
     bus_name VARCHAR(100) NOT NULL,
@@ -118,32 +120,50 @@ CREATE TABLE routes (
     status VARCHAR(20) DEFAULT 'active'  -- Example: 'active', 'inactive'
 );
 
+
+--Not in Use
 -- 1.2. Create Bus Trip (This table is responsible for the bus trip. If user searches for the bus, this table is main responcible to fined the bus).
-CREATE TABLE bus_trips (
-    id SERIAL PRIMARY KEY,
-    bus_trip_code BIGINT UNIQUE NOT NULL DEFAULT nextval('bus_trip_code_seq'),
-    bus_id INT NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
-    route_id INT NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
-    status VARCHAR(20) DEFAULT 'active',
-    created_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
-    updated_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
-);
+-- CREATE TABLE bus_trips (
+--     id SERIAL PRIMARY KEY,
+--     bus_trip_code BIGINT UNIQUE NOT NULL DEFAULT nextval('bus_trip_code_seq'),
+--     bus_id INT NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+--     route_id INT NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
+--     status VARCHAR(20) DEFAULT 'active',
+--     created_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+--     updated_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
+-- );
 
-Bus Trip
+-- Bus Trip
 
-1. id
-2. Bus Trip ID
-3. Bus ID -connected to buses table (id) column
-4. route ID -connected to routes Table (id) column
+-- 1. id
+-- 2. Bus Trip ID
+-- 3. Bus ID -connected to buses table (id) column
+-- 4. route ID -connected to routes Table (id) column
 -- 5. Pick up locations --
 -- 6. Drop locations    -- 
-7. departure time
-8. Arrival time
-   Trip Start Date -This is because when a bus owner wants to create the trips for multiple dates like owner can create trip starts on 2025-08-15
-   Trip Ends date  -This is because when a owner will select the start date then definatly he will end the trip on spesific date. 2025-08-30 (It will shows daily to the users from 15 to 30).
-9. status -initially active
-10. created_at -get current IST time when created
-11. updated_at -get current IST time when rows updated
+-- 7. departure time
+-- 8. Arrival time
+--    Trip Start Date -This is because when a bus owner wants to create the trips for multiple dates like owner can create trip starts on 2025-08-15
+--    Trip Ends date  -This is because when a owner will select the start date then definatly he will end the trip on spesific date. 2025-08-30 (It will shows daily to the users from 15 to 30).
+-- 9. status -initially active
+-- 10. created_at -get current IST time when created
+-- 11. updated_at -get current IST time when rows updated
+--⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️ Above the details
+-- 1.2. Create Bus Trip (This table is responsible for the bus trip. If user searches for the bus, this table is main responsible to fined the bus).
+CREATE TABLE bus_trips (
+    id SERIAL PRIMARY KEY,
+    bus_trip_code VARCHAR(50) UNIQUE NOT NULL,  -- "Bus Trip ID"
+    bus_id INT NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+    route_id INT NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
+    departure_time TIME NOT NULL,
+    arrival_time TIME NOT NULL,
+    trip_start_date DATE NOT NULL,
+    trip_end_date DATE NOT NULL,
+    status VARCHAR(20) DEFAULT 'active', -- active / cancelled / completed
+    created_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'Asia/Kolkata')
+);
+
 
 
 ----------------------------------------------------------------------
@@ -237,6 +257,7 @@ CREATE TABLE drop_locations (
 
 
 -- 3. pickup_points (locations where boarding is allowed for this trip)
+-- Handling the trip 
 
 CREATE TABLE pickup_points (
     id SERIAL PRIMARY KEY,

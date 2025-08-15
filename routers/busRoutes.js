@@ -12,7 +12,12 @@ const {
     createBusTrip,
     createRoute,
     getRoutesList,
-    createPickupLocation
+    createPickupLocation,
+    getPickupLocationsList,
+    updatePickupLocation,
+    createDropLocation,
+    getDropLocationsList,
+    updateDropLocation
 } = require('../controllers/busRoutes');
 
 router.post('/locations', createLocation);
@@ -26,10 +31,11 @@ router.post('/busTrips', createBusTrip);
 router.post('/route', createRoute);
 router.get('/routesList', getRoutesList);
 router.post('/pickupLocation', createPickupLocation);
-
-
-
-
+router.get('/getPickupLocationsList', getPickupLocationsList);
+router.put('/updatePickupLocation', updatePickupLocation);
+router.post('/dropLocation', createDropLocation);
+router.get('/getDropLocationsList', getDropLocationsList);
+router.put('/updateDropLocation', updateDropLocation);
 
 
 module.exports = router;

@@ -358,6 +358,179 @@ const createPickupLocation = async (req, res, next) => {
     }
 };
 
+const getPickupLocationsList = async (req, res, next) => {
+    try {
+        const pickupLocations = await knex('pickup_locations')
+            .select(
+                'id',
+                'name',
+                'city',
+                'state',
+                'latitude',
+                'longitude',
+                'sort_order',
+                'is_active',
+                'created_at'
+            )
+            .orderBy('sort_order', 'asc')
+            .orderBy('name', 'asc');
+
+        res.status(200).json({
+            success: true,
+            count: pickupLocations.length,
+            data: pickupLocations
+        });
+    } catch (error) {
+        console.error('Error fetching pickup locations list:', error);
+        return next(new AppError('Server Error', 500));
+    }
+};
+
+const updatePickupLocation = async (req, res, next) => {
+    try {
+        const { id, name, city, state, latitude, longitude, sort_order, is_active } = req.body;
+
+        if (!id) {
+            return next(new AppError('Pickup location ID is required.', 400));
+        }
+
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (city !== undefined) updateData.city = city;
+        if (state !== undefined) updateData.state = state;
+        if (latitude !== undefined) updateData.latitude = latitude;
+        if (longitude !== undefined) updateData.longitude = longitude;
+        if (sort_order !== undefined) updateData.sort_order = sort_order;
+        if (is_active !== undefined) updateData.is_active = is_active;
+
+        const updated = await knex('pickup_locations')
+            .where({ id })
+            .update(updateData)
+            .returning('*');
+
+        if (updated.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Pickup location not found."
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Pickup location updated successfully",
+            data: updated[0]
+        });
+    } catch (error) {
+        console.error('Error updating pickup location:', error);
+        return next(new AppError('Server Error.', 500));
+    }
+};
+
+const createDropLocation = async (req, res, next) => {
+    try {
+        const { name, city, state, latitude, longitude, sort_order, is_active } = req.body;
+
+        // Basic validation
+        if (!name) {
+            return next(new AppError('Drop Location Name is required.', 400));
+        }
+        if (!city) {
+            return next(new AppError('City is required.', 400));
+        }
+        if (!state) {
+            return next(new AppError('State is required.', 400));
+        }
+
+        const [newLocation] = await knex('drop_locations')
+            .insert({
+                name,
+                city,
+                state,
+                latitude,
+                longitude,
+                sort_order: sort_order || 0,
+                is_active: is_active !== undefined ? is_active : true
+            })
+            .returning('*');
+
+        res.status(201).json({
+            success: true,
+            message: 'Drop location created successfully',
+            data: newLocation
+        });
+    } catch (error) {
+        console.error('Error creating drop location:', error);
+        return next(new AppError('Server Error.', 500));
+    }
+};
+
+const getDropLocationsList = async (req, res, next) => {
+    try {
+        const dropLocations = await knex('drop_locations')
+            .select(
+                'id',
+                'name',
+                'city',
+                'state',
+                'latitude',
+                'longitude',
+                'sort_order',
+                'is_active',
+                'created_at'
+            )
+            .orderBy('sort_order', 'asc')
+            .orderBy('name', 'asc');
+
+        res.status(200).json({
+            success: true,
+            count: dropLocations.length,
+            data: dropLocations
+        });
+    } catch (error) {
+        console.error('Error fetching drop locations:', error);
+        return next(new AppError('Server Error.', 500));
+    }
+};
+
+const updateDropLocation = async (req, res, next) => {
+    try {
+        const { id, name, city, state, latitude, longitude, sort_order, is_active } = req.body;
+
+        if (!id) {
+            return next(new AppError('Drop location ID is required.', 400));
+        }
+
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (city !== undefined) updateData.city = city;
+        if (state !== undefined) updateData.state = state;
+        if (latitude !== undefined) updateData.latitude = latitude;
+        if (longitude !== undefined) updateData.longitude = longitude;
+        if (sort_order !== undefined) updateData.sort_order = sort_order;
+        if (is_active !== undefined) updateData.is_active = is_active;
+
+        const updated = await knex('drop_locations')
+            .where({ id })
+            .update(updateData)
+            .returning('*');
+
+        if (updated.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Drop location not found."
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Drop location updated successfully",
+            data: updated[0]
+        });
+    } catch (error) {
+        console.error('Error updating drop location:', error);
+        return next(new AppError('Server Error.', 500));
+    }
+};
 
 
 module.exports = {
@@ -371,5 +544,10 @@ module.exports = {
     createBusTrip,
     createRoute,
     getRoutesList,
-    createPickupLocation
+    createPickupLocation,
+    getPickupLocationsList,
+    updatePickupLocation,
+    createDropLocation,
+    getDropLocationsList,
+    updateDropLocation 
 };
